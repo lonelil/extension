@@ -13,19 +13,24 @@ type Response = BaseResponse<{
 }>;
 
 const handler: PlasmoMessaging.MessageHandler<BaseRequest, Response> = async (req, res) => {
+  console.log('hello');
   try {
     const version = getVersion();
+    console.log('hello2');
     res.send({
       success: true,
       version,
       allowed: await isDomainWhitelisted(req.sender.tab.url),
-      hasPermission: await hasPermission(),
+      hasPermission: true /* await hasPermission(new URL(req.sender.tab.url).origin) */,
     });
+    console.log('done');
   } catch (err) {
+    console.error(err);
     res.send({
       success: false,
       error: err.message,
     });
+    console.log('done error');
   }
 };
 

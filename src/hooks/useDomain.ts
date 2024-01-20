@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { makeUrlIntoDomain } from '~utils/domains';
+import { getUrlHost } from '~utils/domains';
 import { listenToTabChanges, queryCurrentDomain, stopListenToTabChanges } from '~utils/tabs';
 
 export function useDomain(): null | string {
@@ -15,5 +15,5 @@ export function useDomain(): null | string {
     };
   }, []);
 
-  return makeUrlIntoDomain(domain);
+  return getUrlHost(domain);
 }

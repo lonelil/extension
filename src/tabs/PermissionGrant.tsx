@@ -1,18 +1,28 @@
+import { useCallback, useState } from 'react';
+
 import { useDomainWhitelist } from '~hooks/useDomainWhitelist';
 import { usePermission } from '~hooks/usePermission';
-import { makeUrlIntoDomain } from '~utils/domains';
+import { getUrlInfo } from '~utils/domains';
 
 import './PermissionGrant.css';
 
 export default function PermissionGrant() {
   const { domainWhitelist } = useDomainWhitelist();
-  const { hasPermission, grantPermission } = usePermission();
+  const { checkPermission, grantPermission } = usePermission();
 
   const queryParams = new URLSearchParams(window.location.search);
   const redirectUrl = queryParams.get('redirectUrl') ?? 'https://movie-web.app';
-  const domain = makeUrlIntoDomain(redirectUrl);
+  const { domain, origin } = getUrlInfo(redirectUrl);
 
-  const permissionsGranted = domainWhitelist.includes(domain) && hasPermission;
+  const [permissionsGranted, setPermissionsGranted] = useState(domainWhitelist.includes(domain));
+
+  const checkPermissionGranted = useCallback(async () => {
+    return checkPermission(origin);
+  }, [checkPermission, origin]);
+
+  checkPermissionGranted().then((granted) => {
+    setPermissionsGranted(granted);
+  });
 
   const redirectBack = () => {
     chrome.tabs.getCurrent((tab) => {
@@ -21,7 +31,7 @@ export default function PermissionGrant() {
   };
 
   const handleGrantPermission = () => {
-    grantPermission(domain).then(() => {
+    grantPermission(origin).then(() => {
       redirectBack();
     });
   };
@@ -35,7 +45,7 @@ export default function PermissionGrant() {
         </p>
         <div className="permission-card">
           <p className="text-color" style={{ textAlign: 'center' }}>
-            The website <span className="color-white">{domain}</span> wants to <br /> use the extension on their page.
+            The website <span className="color-white">{origin}</span> wants to <br /> use the extension on their page.
           </p>
         </div>
         <div className="footer">

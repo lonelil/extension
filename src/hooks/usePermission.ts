@@ -1,32 +1,37 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
+
+import { getUrlHost } from '~utils/domains';
 
 import { useDomainWhitelist } from './useDomainWhitelist';
 
-export async function hasPermission() {
+export async function hasPermission(origin: string) {
+  console.log(origin);
+  const originWithSlash = origin.endsWith('/') ? origin : `${origin}/`;
+  console.log(originWithSlash);
+
   return chrome.permissions.contains({
-    origins: ['<all_urls>'],
+    origins: [originWithSlash],
   });
 }
 
 export function usePermission() {
   const { addDomain } = useDomainWhitelist();
-  const [permission, setPermission] = useState(false);
 
-  const grantPermission = useCallback(async (domain: string) => {
+  const grantPermission = useCallback(async (origin: string) => {
     const granted = await chrome.permissions.request({
-      origins: ['<all_urls>'],
+      origins: [origin],
     });
-    setPermission(granted);
+    const domain = getUrlHost(origin);
     if (granted && domain) addDomain(domain);
     return granted;
   }, []);
 
-  useEffect(() => {
-    hasPermission().then((has) => setPermission(has));
+  const checkPermission = useCallback(async (origin: string) => {
+    return hasPermission(origin);
   }, []);
 
   return {
-    hasPermission: permission,
+    checkPermission,
     grantPermission,
   };
 }

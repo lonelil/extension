@@ -1,7 +1,7 @@
 import { Storage } from '@plasmohq/storage';
 import { useStorage } from '@plasmohq/storage/hook';
 
-import { makeUrlIntoDomain } from '~utils/domains';
+import { getUrlInfo } from '~utils/domains';
 
 export const DEFAULT_DOMAIN_WHITELIST = ['movie-web.app', 'dev.movie-web.app'];
 
@@ -24,9 +24,9 @@ export function useDomainStorage() {
 
 export const isDomainWhitelisted = async (url: string | undefined) => {
   if (!url) return false;
-  const domain = makeUrlIntoDomain(url);
-  if (!domain) return false;
-  return domainIsInWhitelist(domain);
+  const urlInfo = getUrlInfo(url);
+  if (!urlInfo) return false;
+  return domainIsInWhitelist(urlInfo.origin);
 };
 
 export const assertDomainWhitelist = async (url: string) => {
